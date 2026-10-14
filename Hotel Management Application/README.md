@@ -139,6 +139,44 @@ Room changes are persisted in MongoDB. The API endpoints are protected by both J
 | `PATCH` | `/api/admin/rooms/:roomId/status` | Set available, booked, or maintenance status |
 | `DELETE` | `/api/admin/rooms/:roomId` | Remove a room |
 
+## Deploy on Vercel
+
+The frontend and backend are deployed as **two Vercel projects** from the same Git repository. This keeps Vite's static build and Express's serverless API in their supported project roots.
+
+### Deploy the backend API
+
+1. Push the project to a Git repository and import it into Vercel.
+2. Create a Vercel project named, for example, `hotelpro-api`.
+3. Set **Root Directory** to `Hotel Management Application/Server`.
+4. Leave the framework as **Other**. Vercel detects the function in `api/[...path].js`; no long-running `npm run dev` process is needed.
+5. Add these **Environment Variables** in the Vercel project settings for Production (and Preview if needed):
+
+   | Name | Value |
+   | --- | --- |
+   | `MONGODB_URI` | Your MongoDB Atlas connection URI, including the database name |
+   | `JWT_SECRET` | A strong random secret of at least 32 characters |
+   | `CLIENT_URL` | The deployed frontend origin, e.g. `https://hotelpro.vercel.app` |
+
+6. In Atlas **Network Access**, allow connections from Vercel. Vercel functions may use dynamic outbound IP addresses; use Atlas network access controls/static egress appropriate to your Vercel plan. If using `0.0.0.0/0` for a quick test, protect it with a dedicated least-privilege database user and a strong password, and understand it allows network access from any IP.
+7. Deploy the project. Test `https://<your-api-domain>/api/health`; it should return a healthy status with `"database":"connected"`.
+
+### Deploy the frontend
+
+1. From the same repository, create a second Vercel project named, for example, `hotelpro-web`.
+2. Set **Root Directory** to `Hotel Management Application/Client`.
+3. The Client project includes `vercel.json` with `npm run build` as its build command and `dist` as its output directory. If the import wizard does not identify the framework, choose **Other**; the root directory and explicit Vercel build settings are sufficient to build the Vite app.
+4. Confirm the install command is `npm install` and the Node.js version is 20.19+ (or 22.12+).
+5. Add this frontend environment variable for Production (and Preview if needed):
+
+   | Name | Value |
+   | --- | --- |
+   | `VITE_API_URL` | The backend deployment origin plus `/api`, e.g. `https://hotelpro-api.vercel.app/api` |
+
+6. Deploy. The included `Client/vercel.json` rewrites client-side routes such as `/login` and `/admin` to the Vite app.
+7. If the frontend deployment URL differs from `CLIENT_URL`, update the backend `CLIENT_URL` setting to the exact frontend origin, then redeploy the backend.
+
+After both deployments are live, register a customer account, promote your own account to admin using the Atlas instructions above, sign in again, and test room management on the frontend's `/admin` route. Never put `MONGODB_URI` or `JWT_SECRET` in `VITE_*` variables; Vite variables are included in frontend code.
+
 ## Current scope
 
 Authentication and admin room inventory are connected to the backend. The public stay cards are sample content, and the booking page is currently a placeholder: guest reservations, availability calendars, and payments are not implemented yet. Marking a room **booked** in the admin page manually changes its inventory status; it does not create a guest reservation.
