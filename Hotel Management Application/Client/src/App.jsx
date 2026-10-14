@@ -65,7 +65,7 @@ function App() {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          'Unable to connect to the server. Please try again.',
+          `Cannot reach the backend at ${api.defaults.baseURL}. Start the backend and check VITE_API_URL.`,
       )
     } finally {
       setLoading(false)

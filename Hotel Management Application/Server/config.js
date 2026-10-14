@@ -11,8 +11,13 @@ async function connectDB() {
     throw new Error("Set MONGODB_URI in the Server/.env file before starting.");
   }
 
-  await mongoose.connect(databaseUrl);
-  console.log("Connected to MongoDB");
+  try {
+    await mongoose.connect(databaseUrl);
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    throw error;
+  }
 }
 
 module.exports = connectDB;

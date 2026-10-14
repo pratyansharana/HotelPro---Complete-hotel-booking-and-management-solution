@@ -1,6 +1,7 @@
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
+const mongoose = require("mongoose");
 const connectDB = require("./config");
 const authRoutes = require("./Routes/authRoutes");
 
@@ -10,11 +11,25 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api/auth", authRoutes);
-
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+  const connected = mongoose.connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({
+    status: connected ? "ok" : "unavailable",
+    database: connected ? "connected" : "disconnected",
+  });
 });
+
+app.use("/api", (_req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      message: "Database is unavailable. Please try again later.",
+    });
+  }
+
+  return next();
+});
+
+app.use("/api/auth", authRoutes);
 
 app.use((error, _req, res, _next) => {
   if (error.code === 11000) {
