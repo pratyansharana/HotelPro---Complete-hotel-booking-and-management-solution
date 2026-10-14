@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const connectDB = require("./config");
 const authRoutes = require("./Routes/authRoutes");
+const adminRoutes = require("./Routes/adminRoutes");
 
 const app = express();
 
@@ -30,10 +31,16 @@ app.use("/api", (_req, res, next) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use((error, _req, res, _next) => {
   if (error.code === 11000) {
-    return res.status(409).json({ message: "Email is already registered." });
+    const message = error.keyPattern?.roomNumber
+      ? "That room number is already in use."
+      : error.keyPattern?.email
+        ? "Email is already registered."
+        : "A record with that value already exists.";
+    return res.status(409).json({ message });
   }
 
   if (error.name === "ValidationError" || error.type === "entity.parse.failed") {
