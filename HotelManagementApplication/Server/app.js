@@ -14,7 +14,13 @@ const allowedOrigins = process.env.CLIENT_URL
 
 app.use(
   cors({
-    origin: allowedOrigins?.length ? allowedOrigins : true,
+    origin(origin, callback) {
+      if (!origin || !allowedOrigins?.length || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
   }),
 );
 app.use(bodyParser.json());

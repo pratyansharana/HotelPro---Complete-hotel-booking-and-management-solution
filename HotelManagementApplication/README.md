@@ -23,7 +23,7 @@ If the Atlas password contains special characters, URL-encode them in the connec
 Open a PowerShell terminal at the repository root and run:
 
 ```powershell
-cd "Hotel Management Application\Server"
+cd "HotelManagementApplication\Server"
 Copy-Item .env.example .env
 ```
 
@@ -63,7 +63,7 @@ It should return a healthy status with the database marked as connected.
 Open a **second** PowerShell terminal at the repository root:
 
 ```powershell
-cd "Hotel Management Application\Client"
+cd "HotelManagementApplication\Client"
 Copy-Item .env.example .env
 npm install
 npm run dev
@@ -141,14 +141,14 @@ Room changes are persisted in MongoDB. The API endpoints are protected by both J
 
 ## Deploy on Vercel
 
-The frontend and backend are deployed as **two Vercel projects** from the same Git repository. This keeps Vite's static build and Express's serverless API in their supported project roots.
+The frontend and backend are deployed as **two Vercel projects** from the same Git repository.
 
 ### Deploy the backend API
 
 1. Push the project to a Git repository and import it into Vercel.
 2. Create a Vercel project named, for example, `hotelpro-api`.
-3. Set **Root Directory** to `Hotel Management Application/Server`.
-4. Leave the framework as **Other**. Vercel detects the function in `api/[...path].js`; no long-running `npm run dev` process is needed.
+3. Set **Root Directory** to `HotelManagementApplication/Server`.
+4. Set **Framework Preset** to **Express** so Vercel deploys `app.js` as one Express function, routing health, authentication, and admin requests through the same app. Do not deploy the local `index.js` listener as a function.
 5. Add these **Environment Variables** in the Vercel project settings for Production (and Preview if needed):
 
    | Name | Value |
@@ -163,7 +163,7 @@ The frontend and backend are deployed as **two Vercel projects** from the same G
 ### Deploy the frontend
 
 1. From the same repository, create a second Vercel project named, for example, `hotelpro-web`.
-2. Set **Root Directory** to `Hotel Management Application/Client`.
+2. Set **Root Directory** to `HotelManagementApplication/Client`.
 3. The Client project includes `vercel.json` with `npm run build` as its build command and `dist` as its output directory. If the import wizard does not identify the framework, choose **Other**; the root directory and explicit Vercel build settings are sufficient to build the Vite app.
 4. Confirm the install command is `npm install` and the Node.js version is 20.19+ (or 22.12+).
 5. Add this frontend environment variable for Production (and Preview if needed):
